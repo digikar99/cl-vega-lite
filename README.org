@@ -1,0 +1,113 @@
+#+title: vega-lite: A [WIP] Common Lisp interface for Vega Lite
+
+In case you haven't used, [[https://ggplot2.tidyverse.org/][ggplot]], you should definitely try! The magic seems to be due to [[https://link.springer.com/book/10.1007/0-387-28695-0][grammar of graphics]].
+
+[[https://vega.github.io/vega-lite/][vega-lite]] is another interactive grammar of graphics. (It's not clear to me if the two grammars are the same!)
+
+The current library is a Common Lisp interface to vega-lite. Out of the box, it works for up to about 1000 points, and may be 10000 points if you can tolerate some lag. Beyond that, you would need to to manual simplification.
+
+I know of exactly one attempt doing something similar: [[https://github.com/Lisp-Stat/plot/][plot]]. However, compared to =plot/vega=, I intend to keep dependencies simpler. In particular, the only dependencies are:
+
+- hunchentoot: vega-lite is a JS library, so we use the browser
+- shasht: because JS loves JSON and I love shasht
+- alexandria
+
+Furthermore, the goal is to use the rich assertion and type system of Common Lisp to allow stronger checks and helps before the JSON reaches the browser, and minimize the /overgenerosity/ of JS interpreters.
+
+* Contents
+:PROPERTIES:
+:TOC:      :include all :ignore (this)
+:END:
+
+:CONTENTS:
+- [[#installation][Installation]]
+- [[#getting-started][Getting Started]]
+  - [[#fast-to-get-started-high-level-rigid-wip][Fast to get started, high-level, rigid (WIP)]]
+  - [[#grammatical-mid-level-wip][Grammatical, mid-level (WIP)]]
+  - [[#ugly-low-level-flexible-vega-plot-specification][Ugly, low-level, flexible: (vega-plot specification)]]
+:END:
+
+* Installation
+:PROPERTIES:
+:CUSTOM_ID: installation
+:END:
+
+Install [[https://github.com/rudolfochrist/ql-https][ql-https]]:
+
+#+begin_src
+export LISP=sbcl
+curl https://raw.githubusercontent.com/rudolfochrist/ql-https/master/install.sh | bash
+#+end_src
+
+Install [[https://ultralisp.org/][ultralisp]]:
+
+#+begin_src lisp
+(ql-dist:install-dist "http://dist.ultralisp.org/"
+                      :prompt nil)
+#+end_src
+
+Install vega-lite:
+
+#+begin_src lisp
+(ql:quickload "vega-lite-wip")
+#+end_src
+
+* Getting Started
+:PROPERTIES:
+:CUSTOM_ID: getting-started
+:END:
+
+After installation, you can use package local nicknames to use it in your own package.
+
+#+begin_src lisp
+(defpackage :vega-lite-user
+  (:use :cl)
+  (:local-nicknames (:vl :vega-lite)))
+
+(in-package :vega-lite-user)
+
+(vl:ensure-plot-server)
+#+end_src
+
+There are three ways to use vega-lite.
+
+** Fast to get started, high-level, rigid (WIP)
+:PROPERTIES:
+:CUSTOM_ID: fast-to-get-started-high-level-rigid-wip
+:END:
+
+- bar-chart
+- histogram
+- scatter
+
+Out of the box, support is provided for plotting when data is supplied as 1 dimensional lists or vectors. For other data types, specialize the =1d-data-as-list= method.
+
+** Grammatical, mid-level (WIP)
+:PROPERTIES:
+:CUSTOM_ID: grammatical-mid-level-wip
+:END:
+
+=vega-compose= takes in a list of elements and combines them. This amounts to concatenation of plists.
+
+- make-data(*)
+- make-datasets
+- make-mark(*)
+- make-encoding(*)
+- make-positional-channel
+- make-axis*
+- make-scale*
+- make-bin-params(*)
+
+- \+mark-types+
+- \+data-types+
+- \+channel-types+
+- \+scale-type+
+
+** Ugly, low-level, flexible: =(vega-plot specification)=
+:PROPERTIES:
+:CUSTOM_ID: ugly-low-level-flexible-vega-plot-specification
+:END:
+
+This takes a vega-lite specification as a plist and converts it to JSON to use in the browser. This can be any plist.
+
+See the [[https://vega.github.io/vega-lite/tutorials/getting_started.html][official Vega Lite tutorial]] as well as [[https://vega.github.io/vega-lite/examples/][examples]].
