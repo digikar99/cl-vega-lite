@@ -1,5 +1,6 @@
 (asdf:defsystem "vega-lite-wip"
   :depends-on ("alexandria"
+               "closer-mop"
                "hunchentoot"
                "shasht")
   :license "MIT"
@@ -8,5 +9,6 @@
   :components ((:file "package")
                (:file "utils")
                (:file "server")
+               (:file "compose")
                (:file "vega-lite")
                (:file "high-level")))

@@ -8,30 +8,34 @@
 
 (defun ensure-plot-server
     (&key (port +default-port+)
-       (address +default-address+))
+       (address +default-address+)
+       (verbose t))
   (when (boundp '*plot-server*)
     (let ((old-port (hunchentoot:acceptor-port *plot-server*))
           (old-address (hunchentoot:acceptor-address *plot-server*)))
+      (when verbose
+        (format t "~%*plot-server* is already running at ~A:~A.~%" old-address port))
       (when (not (and (= port old-port)
                       (string= address old-address)))
-        (format t "~%Stopping old *plot-server* at ~A:~A..." old-address port)
+        (when verbose (format t "Stopping it... "))
         (hunchentoot:stop *plot-server*)
-        (format t "Done~%")
+        (when verbose (format t "Done~%"))
         (force-output))))
   (when (not (boundp '*plot-server*))
     (setf *plot-server*
           (make-instance 'hunchentoot:easy-acceptor
                          :document-root (namestring
                                          (asdf:component-pathname
-                                          (asdf:find-system "vega-lite")))
+                                          (asdf:find-system "vega-lite-wip")))
                          :name "vega-lite"
                          :access-log-destination nil
                          :address address
                          :port port))
     (setf (hunchentoot:acceptor-access-log-destination *plot-server*) nil)
     (hunchentoot:start *plot-server*)
-    (format t "Started *plot-server*. It is available at~%  http://~a:~a"
-            address port)))
+    (when verbose
+      (format t "Started *plot-server*. It is available at~%  http://~a:~a"
+              address port))))
 
 (hunchentoot:define-easy-handler (vega-lite-string-handler :uri "/vega-lite-string/") ()
   (setf (hunchentoot:content-type*) "text/json")

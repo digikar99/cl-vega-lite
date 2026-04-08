@@ -8,51 +8,67 @@
   "Low level plot function.
 
 Lisp names will be converted to snake case names."
-  (ensure-plot-server)
+  (ensure-plot-server :verbose nil)
   (let ((shasht:*write-plist-as-object* t)
         (shasht:*write-alist-as-object* t)
         (shasht:*symbol-name-function* #'snake-case-name)
         (shasht:*write-null-values* '(:null nil))
         (shasht:*write-false-values* '(:false)))
     (setf *vega-lite-string*
-          (shasht:write-json (list* :$schema +default-schema+
-                                    specification)
-                             nil))
+          (shasht:write-json specification nil))
     specification))
 
-(defun vega-compose (&rest specs)
-  "Each element of SPECS must be a plist"
-  (apply #'nconc specs))
+(defclass spec-class (standard-class)
+  ((depth :allocation :class :initform -1)))
 
-(defmacro define-spec-function (function-name spec-name (&rest parameters) &optional doc)
-  (let ((args (gensym "ARGS")))
-    `(defun ,function-name (&rest ,args &key ,@parameters &allow-other-keys)
-       ,(or doc "")
-       (declare (ignorable ,@(mapcar (lambda (p)
-                                       (if (symbolp p)
-                                           p
-                                           (first p)))
-                                     parameters)))
-       ,(if spec-name
-            `(list ,spec-name ,args)
-            args))))
+(defclass spec ()
+  ((depth :allocation :class :initform -1))
+  (:documentation "The base class for vega-lite specification objects"))
 
-(define-spec-function make-plot nil
-    (data mark encoding height width))
+(defmacro define-spec (spec-name depth (&rest parameters) &optional (doc ""))
+  (let* ((args (gensym "ARGS"))
+         (parameters (loop :for p :in parameters
+                           :if (listp p)
+                             :collect p
+                           :else
+                             :collect (list p :initarg (intern (string p) :keyword))))
+         (fn-params (mapcar (lambda (p)
+                              (if (symbolp p)
+                                  p
+                                  (list (first p) (getf (rest p) :initform))))
+                            parameters)))
+    (loop :for p :in parameters
+          :do (setf (getf (rest p) :type)
+                    (or (getf (rest p) :type)
+                        `(or null spec string))))
+    `(progn
+       (defclass ,spec-name (spec)
+         ((depth :initform ,depth)
+          ,@(when (zerop depth)
+              `(($schema :initform +default-schema+)))
+          ,@parameters)
+         (:documentation ,doc))
+       (closer-mop:ensure-finalized (find-class ',spec-name))
+       (defun ,(alexandria:symbolicate 'make '- spec-name) (&rest ,args &key ,@fn-params)
+         ,doc
+         (declare (ignorable ,@(mapcar (lambda (p)
+                                         (if (symbolp p)
+                                             p
+                                             (first p)))
+                                       parameters)))
+         (apply #'make-instance ',spec-name ,args)))))
+
+(define-spec plot 0 (data mark encoding height width)
+    "Top-level specification (SPEC) for vega-lite. All other specifications
+occur as some slot or sub-slot of the PLOT class.")
 
 ;;; Data
 
-(define-spec-function make-data :data
-    (values url name format parse)
+(define-spec data 1 (values url name format parse)
     "https://vega.github.io/vega-lite/docs/data.html")
 
-(define-spec-function make-data* nil
-    (values url name format parse)
-    "https://vega.github.io/vega-lite/docs/data.html")
-
-(defun make-datasets (&rest datasets &key &allow-other-keys)
-  "https://vega.github.io/vega-lite/docs/data.html#datasets"
-  (list :datasets datasets))
+(define-spec datasets 1 (datasets)
+    "https://vega.github.io/vega-lite/docs/data.html#datasets")
 
 (alexandria:define-constant +data-types+
     (list :json :csv :tsv :dsv)
@@ -75,15 +91,7 @@ Lisp names will be converted to snake case names."
   :test #'equal
   :documentation "https://vega.github.io/vega-lite/docs/mark.html#types")
 
-(define-spec-function make-mark :mark
-    (type aria cursor description style tooltip clip invalid order
-     x y x2 y2 x-offset y-offset x2-offset y2-offset width height
-     color fill filled)
-    "MARK-TYPE must be one of +MARK-TYPES+
-
-https://vega.github.io/vega-lite/docs/mark.html#mark-def")
-
-(define-spec-function make-mark* nil
+(define-spec mark 1
     (type aria cursor description style tooltip clip invalid order
      x y x2 y2 x-offset y-offset x2-offset y2-offset width height
      color fill filled)
@@ -93,20 +101,7 @@ https://vega.github.io/vega-lite/docs/mark.html#mark-def")
 
 ;;; Encoding
 
-(define-spec-function make-encoding :encoding
-    (x y x-error y-error
-     x2 y2 x-error2 y-error2
-
-     color opacity size angle shape
-
-     text tooltip
-     href description
-     detail key order
-
-     facet row column)
-    "For a full list of encodings, see https://vega.github.io/vega-lite/docs/encoding.html")
-
-(define-spec-function make-encoding* nil
+(define-spec encoding 1
     (x y x-error y-error
      x2 y2 x-error2 y-error2
 
@@ -136,6 +131,12 @@ https://vega.github.io/vega-lite/docs/mark.html#mark-def")
   :test #'equal
   :documentation "https://vega.github.io/vega-lite/docs/aggregate.html")
 
+(define-spec x 2 (field scale type axis aggregate bin sort stack time-unit title)
+    "https://vega.github.io/vega-lite/docs/encoding.html#field-def")
+
+(define-spec y 2 (field scale type axis aggregate bin sort stack time-unit title)
+    "https://vega.github.io/vega-lite/docs/encoding.html#field-def")
+
 (defun make-position-channel (name &rest args
                               &key field type axis aggregate bin sort stack time-unit
                                 title
@@ -156,11 +157,19 @@ https://vega.github.io/vega-lite/docs/mark.html#mark-def")
               (and (stringp bin) (string-equal bin "binned"))))
   (list name args))
 
-(define-spec-function make-axis* nil
+(define-spec axis 3
     (aria band-position description
      max-extent min-extent
-     orient position style
-     translate zindex)
+     orient offset position style
+     translate zindex
+
+     ticks tick-band tick-cap tick-color tick-dash tick-extra tick-min-step tick-offset
+     tick-opacity tick-round tick-size tick-width values
+
+     format format-type
+     labels label-align label-angle label-baseline label-bound label-color label-expr label-flush label-flush-offset
+     label-font label-font-size label-font-style label-font-weight label-limit
+     label-line-height label-offset label-opacity label-overlap label-padding label-separation)
     "https://vega.github.io/vega-lite/docs/axis.html")
 
 (alexandria:define-constant +continuous-scale-types+
@@ -179,6 +188,11 @@ https://vega.github.io/vega-lite/docs/mark.html#mark-def")
     (append +continuous-scale-types+ +discrete-scale-types+ +discretizing-scale-types+)
   :test #'equalp)
 
+(define-spec scale 3 (type
+                      domain
+                      domain-max domain-min domain-mid domain-raw)
+    "https://vega.github.io/vega-lite/docs/scale.html")
+
 (defun make-scale* (&rest args
                     &key type
                       domain
@@ -189,10 +203,6 @@ https://vega.github.io/vega-lite/docs/mark.html#mark-def")
   (when type (assert (member type +scale-types+ :test #'string-equal)))
   args)
 
-(define-spec-function make-bin-params :bin
-    ((binned t) anchor base divide extent maxbins minstep nice step steps)
-  "https://vega.github.io/vega-lite/docs/bin.html#bin-parameters")
-
-(define-spec-function make-bin-params* nil
-    ((binned t) anchor base divide extent maxbins minstep nice step steps)
+(define-spec bin 3
+    ((binned :initform t :type t) anchor base divide extent maxbins minstep nice step steps)
   "https://vega.github.io/vega-lite/docs/bin.html#bin-parameters")

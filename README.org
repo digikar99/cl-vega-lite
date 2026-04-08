@@ -9,6 +9,7 @@ The current library is a Common Lisp interface to vega-lite. Out of the box, it 
 I know of exactly one attempt doing something similar: [[https://github.com/Lisp-Stat/plot/][plot]]. However, compared to =plot/vega=, I intend to keep dependencies simpler. In particular, the only dependencies are:
 
 - hunchentoot: vega-lite is a JS library, so we use the browser
+- closer-mop: introspecting CLOS to ease usage
 - shasht: because JS loves JSON and I love shasht
 - alexandria
 
@@ -87,16 +88,17 @@ Out of the box, support is provided for plotting when data is supplied as 1 dime
 :CUSTOM_ID: grammatical-mid-level-wip
 :END:
 
-=vega-compose= takes in a list of elements and combines them. This amounts to concatenation of plists.
+=vega-compose= takes in a list of elements and combines them. Essentially, it reduces using the function =compose=. It takes two arguments, and combines them /reasonably/.
 
-- make-data(*)
+- make-data
 - make-datasets
-- make-mark(*)
-- make-encoding(*)
-- make-positional-channel
-- make-axis*
-- make-scale*
-- make-bin-params(*)
+- make-mark
+- make-encoding
+- make-x
+- make-y
+- make-axis
+- make-scale
+- make-bin
 
 - \+mark-types+
 - \+data-types+

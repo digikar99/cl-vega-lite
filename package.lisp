@@ -6,19 +6,23 @@
            #:ensure-plot-server
 
            #:vega-plot
+           #:compose
+           #:vega-compose
 
+           #:data
            #:make-data
-           #:make-data*
+           #:datasets
            #:meke-datasets
+           #:mark
            #:make-mark
-           #:make-mark*
+           #:encoding
            #:make-encoding
-           #:make-encoding*
-           #:make-positional-channel
-           #:make-axis*
-           #:make-scale*
-           #:make-bin-params
-           #:make-bin-params*
+           #:x
+           #:make-x
+           #:y
+           #:make-y
+           #:bin
+           #:make-bin
 
            #:+data-types+
            #:+mark-types+
