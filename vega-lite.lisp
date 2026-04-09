@@ -44,8 +44,6 @@ Lisp names will be converted to snake case names."
     `(progn
        (defclass ,spec-name (spec)
          ((depth :initform ,depth)
-          ,@(when (zerop depth)
-              `(($schema :initform +default-schema+)))
           ,@parameters)
          (:documentation ,doc))
        (closer-mop:ensure-finalized (find-class ',spec-name))
@@ -58,9 +56,19 @@ Lisp names will be converted to snake case names."
                                        parameters)))
          (apply #'make-instance ',spec-name ,args)))))
 
-(define-spec plot 0 (data mark encoding height width)
+(define-spec plot 0 (name description title data transform params
+                     resolve
+                     align bounds center spacing
+                     ($schema :initform +default-schema+)
+                     background padding autosize config usermeta
+                     mark encoding height width view projection
+                     style corner-radius cursor fill fill-opacity opacity
+                     stroke stroke-cap stroke-dash stroke-dash-offset
+                     stroke-join stroke-miter-limit stroke-opacity stroke-width)
     "Top-level specification (SPEC) for vega-lite. All other specifications
-occur as some slot or sub-slot of the PLOT class.")
+occur as some slot or sub-slot of the PLOT class.
+
+https://vega.github.io/vega-lite/docs/spec.html")
 
 ;;; Data
 
