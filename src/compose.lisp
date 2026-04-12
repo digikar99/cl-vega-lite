@@ -20,41 +20,40 @@
                               (setf (slot-value new-spec name) (slot-value spec1 name)))))
              new-spec))
           ((eq class1 top-class)
-           (labels ((%compose (class)
-                      (let* ((new-spec (make-instance class))
+           (labels ((%compose (spec)
+                      (let* ((class (class-of spec))
                              (slots (closer-mop:class-slots class)))
                         (loop :for slot :in slots
                               :for name := (closer-mop:slot-definition-name slot)
                               :do (when (slot-boundp spec2 name)
-                                    (setf (slot-value new-spec name)
+                                    (setf (slot-value spec name)
                                           (slot-value spec2 name))))
-                        new-spec))
-                    (%class-depth (class)
-                      (let* ((slots (closer-mop:class-slots class))
-                             (depth-slot
-                               (loop :for slot :in slots
-                                     :for sname := (closer-mop:slot-definition-name slot)
-                                     :if (eq 'depth sname)
-                                       :do (return slot))))
-                        (closer-mop:slot-definition-initform depth-slot)))
-                    (traverse-slots (class)
-                      (cond ((eq class class2)
-                             (%compose class))
-                            ((>= (%class-depth class) depth2)
-                             nil)
-                            (t
-                             (let ((slots (closer-mop:class-slots class)))
-                               (loop :for slot :in slots
-                                     :for sname := (closer-mop:slot-definition-name slot)
-                                     :for sclass := (find-class sname nil)
-                                     :do (when sclass
-                                           (let ((subspec (traverse-slots sclass)))
-                                             (when subspec
-                                               (let ((new-spec (make-instance class)))
-                                                 (setf (slot-value new-spec sname)
-                                                       subspec)
-                                                 (return new-spec)))))))))))
-             (traverse-slots class1)))
+                        spec))
+                    (traverse-slots (spec1)
+                      (let ((class1 (class-of spec1)))
+                        (cond ((not (typep spec1 'spec))
+                               spec1)
+                              ((eq class1 class2)
+                               (%compose spec1))
+                              ((>= (slot-value spec1 'depth) depth2)
+                               nil)
+                              (t
+                               (loop :for slot :in (closer-mop:class-slots class1)
+                                     :for slot-name := (closer-mop:slot-definition-name slot)
+                                     :for slot-class := (find-class slot-name nil)
+                                     :do (let* ((subspec
+                                                  (cond ((slot-boundp spec1 slot-name)
+                                                         (slot-value spec1 slot-name))
+                                                        (slot-class
+                                                         (make-instance slot-class))))
+                                                (traversed-subspec
+                                                  (when subspec
+                                                    (traverse-slots subspec))))
+                                           (when traversed-subspec
+                                             (setf (slot-value spec1 slot-name)
+                                                   traversed-subspec))))
+                               spec1)))))
+             (traverse-slots spec1)))
           ((eq class2 top-class)
            (compose spec2 spec1))
           (t
