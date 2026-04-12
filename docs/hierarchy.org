@@ -1,0 +1,459 @@
+#+title: Component Hierarchy
+
+Let us see the component and slot hierarchy of vega-lite using the closer-mop. First, we load =vega-lite-wip=.
+
+#+begin_src lisp
+(ql:quickload "vega-lite-wip")
+#+end_src
+
+Next, let us define a package for us to play around in:
+
+#+begin_src lisp
+(defpackage :vega-introspection
+  (:use :cl))
+#+end_src
+
+Now, let us use =closer-mop= to traverse the class and slot hierarchy, starting from the =vega-lite:plot= class.
+
+#+begin_src lisp
+(in-package :vega-introspection)
+
+(defun traverse-slots (class)
+  (closer-mop:ensure-finalized class)
+  (format t "~A" (string-downcase (class-name class)))
+  (terpri)
+  (let ((slots (closer-mop:class-slots class)))
+    (pprint-logical-block (*standard-output* nil :per-line-prefix "    ")
+      (loop :for slot :in slots
+            :for name := (closer-mop:slot-definition-name slot)
+            :for class := (find-class name nil)
+            :do (if class
+                    (traverse-slots class)
+                    (progn
+                      (format t "~A" (string-downcase name))
+                      (terpri)))))
+    (terpri)))
+
+(traverse-slots (find-class 'vega-lite:plot))
+#+end_src
+
+At the time of this writing, this produces:
+
+#+begin_src 
+plot
+    depth
+    name
+    description
+    title
+    data
+        depth
+        values
+        url
+        name
+        format
+        parse
+        
+    transform
+    params
+    resolve
+    align
+    bounds
+    center
+    spacing
+    $schema
+    background
+    padding
+    autosize
+    config
+    usermeta
+    mark
+        depth
+        type
+        aria
+        cursor
+        description
+        style
+        tooltip
+        clip
+        invalid
+        order
+        x
+            depth
+            field
+            scale
+                depth
+                type
+                domain
+                domain-max
+                domain-min
+                domain-mid
+                domain-raw
+                
+            type
+            axis
+                depth
+                aria
+                band-position
+                description
+                max-extent
+                min-extent
+                orient
+                offset
+                position
+                style
+                translate
+                zindex
+                ticks
+                tick-band
+                tick-cap
+                tick-color
+                tick-dash
+                tick-extra
+                tick-min-step
+                tick-offset
+                tick-opacity
+                tick-round
+                tick-size
+                tick-width
+                values
+                format
+                format-type
+                labels
+                label-align
+                label-angle
+                label-baseline
+                label-bound
+                label-color
+                label-expr
+                label-flush
+                label-flush-offset
+                label-font
+                label-font-size
+                label-font-style
+                label-font-weight
+                label-limit
+                label-line-height
+                label-offset
+                label-opacity
+                label-overlap
+                label-padding
+                label-separation
+                
+            aggregate
+            bin
+                depth
+                binned
+                anchor
+                base
+                divide
+                extent
+                maxbins
+                minstep
+                nice
+                step
+                steps
+                
+            sort
+            stack
+            time-unit
+            title
+            
+        y
+            depth
+            field
+            scale
+                depth
+                type
+                domain
+                domain-max
+                domain-min
+                domain-mid
+                domain-raw
+                
+            type
+            axis
+                depth
+                aria
+                band-position
+                description
+                max-extent
+                min-extent
+                orient
+                offset
+                position
+                style
+                translate
+                zindex
+                ticks
+                tick-band
+                tick-cap
+                tick-color
+                tick-dash
+                tick-extra
+                tick-min-step
+                tick-offset
+                tick-opacity
+                tick-round
+                tick-size
+                tick-width
+                values
+                format
+                format-type
+                labels
+                label-align
+                label-angle
+                label-baseline
+                label-bound
+                label-color
+                label-expr
+                label-flush
+                label-flush-offset
+                label-font
+                label-font-size
+                label-font-style
+                label-font-weight
+                label-limit
+                label-line-height
+                label-offset
+                label-opacity
+                label-overlap
+                label-padding
+                label-separation
+                
+            aggregate
+            bin
+                depth
+                binned
+                anchor
+                base
+                divide
+                extent
+                maxbins
+                minstep
+                nice
+                step
+                steps
+                
+            sort
+            stack
+            time-unit
+            title
+            
+        x2
+        y2
+        x-offset
+        y-offset
+        x2-offset
+        y2-offset
+        width
+        height
+        color
+        fill
+        filled
+        
+    encoding
+        depth
+        x
+            depth
+            field
+            scale
+                depth
+                type
+                domain
+                domain-max
+                domain-min
+                domain-mid
+                domain-raw
+                
+            type
+            axis
+                depth
+                aria
+                band-position
+                description
+                max-extent
+                min-extent
+                orient
+                offset
+                position
+                style
+                translate
+                zindex
+                ticks
+                tick-band
+                tick-cap
+                tick-color
+                tick-dash
+                tick-extra
+                tick-min-step
+                tick-offset
+                tick-opacity
+                tick-round
+                tick-size
+                tick-width
+                values
+                format
+                format-type
+                labels
+                label-align
+                label-angle
+                label-baseline
+                label-bound
+                label-color
+                label-expr
+                label-flush
+                label-flush-offset
+                label-font
+                label-font-size
+                label-font-style
+                label-font-weight
+                label-limit
+                label-line-height
+                label-offset
+                label-opacity
+                label-overlap
+                label-padding
+                label-separation
+                
+            aggregate
+            bin
+                depth
+                binned
+                anchor
+                base
+                divide
+                extent
+                maxbins
+                minstep
+                nice
+                step
+                steps
+                
+            sort
+            stack
+            time-unit
+            title
+            
+        y
+            depth
+            field
+            scale
+                depth
+                type
+                domain
+                domain-max
+                domain-min
+                domain-mid
+                domain-raw
+                
+            type
+            axis
+                depth
+                aria
+                band-position
+                description
+                max-extent
+                min-extent
+                orient
+                offset
+                position
+                style
+                translate
+                zindex
+                ticks
+                tick-band
+                tick-cap
+                tick-color
+                tick-dash
+                tick-extra
+                tick-min-step
+                tick-offset
+                tick-opacity
+                tick-round
+                tick-size
+                tick-width
+                values
+                format
+                format-type
+                labels
+                label-align
+                label-angle
+                label-baseline
+                label-bound
+                label-color
+                label-expr
+                label-flush
+                label-flush-offset
+                label-font
+                label-font-size
+                label-font-style
+                label-font-weight
+                label-limit
+                label-line-height
+                label-offset
+                label-opacity
+                label-overlap
+                label-padding
+                label-separation
+                
+            aggregate
+            bin
+                depth
+                binned
+                anchor
+                base
+                divide
+                extent
+                maxbins
+                minstep
+                nice
+                step
+                steps
+                
+            sort
+            stack
+            time-unit
+            title
+            
+        x-error
+        y-error
+        x2
+        y2
+        x-error2
+        y-error2
+        color
+        opacity
+        size
+        angle
+        shape
+        text
+        tooltip
+        href
+        description
+        detail
+        key
+        order
+        facet
+        row
+        column
+        
+    height
+    width
+    view
+    projection
+    style
+    corner-radius
+    cursor
+    fill
+    fill-opacity
+    opacity
+    stroke
+    stroke-cap
+    stroke-dash
+    stroke-dash-offset
+    stroke-join
+    stroke-miter-limit
+    stroke-opacity
+    stroke-width
+    
+#+end_src
