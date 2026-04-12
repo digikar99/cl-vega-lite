@@ -4,20 +4,62 @@
   "https://vega.github.io/schema/vega-lite/v6.json"
   :test #'string=)
 
+(defmacro with-shasht-config (&body body)
+  `(let ((shasht:*write-plist-as-object* t)
+         (shasht:*write-alist-as-object* t)
+         (shasht:*symbol-name-function* #'snake-case-name)
+         (shasht:*write-null-values* '(:null nil))
+         (shasht:*write-false-values* '(:false))
+         (shasht:*read-default-object-format* :plist))
+     ,@body))
+
 (defun vega-plot (specification)
   "Low level plot function.
 
 Lisp names will be converted to snake case names."
   (ensure-plot-server :verbose nil)
-  (let ((shasht:*write-plist-as-object* t)
-        (shasht:*write-alist-as-object* t)
-        (shasht:*symbol-name-function* #'snake-case-name)
-        (shasht:*write-null-values* '(:null nil))
-        (shasht:*write-false-values* '(:false)))
+  (with-shasht-config
     (setf *vega-lite-string* (shasht:write-json specification nil))
     (loop :for client :in (hunchensocket:clients *vega-lite-string-socket*)
           :do (hunchensocket:send-text-message client *vega-lite-string*))
     specification))
+
+(defun save-plot (filename &optional type)
+  (ensure-plot-server :verbose nil)
+  (with-shasht-config
+    (loop :for client :in (hunchensocket:clients *save-plot-socket*)
+          :do (hunchensocket:send-text-message
+               client
+               (shasht:write-json (list :format (or (pathname-type filename)
+                                                    type
+                                                    "svg")
+                                        :filename filename)
+                                  nil)))))
+
+(defun save-plot-from-client (json-string)
+  (with-shasht-config
+    (let* ((json (shasht:read-json json-string))
+           (json (let ((plist nil))
+                   (alexandria:doplist (k v json)
+                     ;; FIXME: More general lisp-case-name
+                     (push (intern (string-upcase k) :keyword) plist)
+                     (push v plist))
+                   (nreverse plist))))
+      (destructuring-bind (&key filename format data &allow-other-keys)
+          json
+        (with-open-file (f filename :direction :output
+                                    :if-does-not-exist :create
+                                    :if-exists :supersede
+                                    :element-type
+                                    (cond ((string= format "svg")
+                                           'character)
+                                          ((string= format "png")
+                                           '(unsigned-byte 8))
+                                          (t
+                                           (error "Expeced format to be one of svg or png, but it is ~A" format))))
+          (when (string= format "png")
+            (setf data (base64:base64-string-to-usb8-array data)))
+          (write-sequence data f))))))
 
 (defclass spec-class (standard-class)
   ((depth :allocation :class :initform -1)))

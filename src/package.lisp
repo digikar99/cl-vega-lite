@@ -6,8 +6,11 @@
            #:ensure-plot-server
 
            #:vega-plot
+           #:save-plot
+
            #:compose
            #:vega-compose
+
 
            #:data
            #:make-data

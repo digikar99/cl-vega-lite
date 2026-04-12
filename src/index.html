@@ -31,6 +31,7 @@
 
     <script>
       var old_vlspec_string = "";
+      var vembed_result = null;
 
       function url(filename){
           const xmlhttp = new XMLHttpRequest();
@@ -43,20 +44,40 @@
           return obj;
       }
 
-      function update_plot_if_required(new_vlspec_string){
+      async function update_plot_if_required(new_vlspec_string){
           if (new_vlspec_string != old_vlspec_string){
-              vegaEmbed("#vis", JSON.parse(new_vlspec_string));
+              vembed_result = await vegaEmbed("#vis", JSON.parse(new_vlspec_string));
               old_vlspec_string = new_vlspec_string;
           }
       }
 
       const vls = new WebSocket("./vega-lite-string/");
-      vls.addEventListener("open", (event) => {
-
-      })
-
       vls.addEventListener("message", (event) => {
           update_plot_if_required(event.data)
+      })
+
+
+      const sps = new WebSocket("./save-plot/");
+
+      async function save_plot_and_send(data){
+          const format = data.format;
+          let image_data = null;
+          if (format == "png"){
+              const url = await vembed_result.view.toImageURL(format);
+              image_data = url.split(',')[1];
+          }else if (format == "svg"){
+              image_data = await vembed_result.view.toSVG();
+          }
+          sps.send(JSON.stringify({
+              filename: data.filename,
+              data: image_data,
+              format: data.format
+          }));
+      }
+
+      sps.addEventListener("message", (event) => {
+          const data = JSON.parse(event.data);
+          save_plot_and_send(data);
       })
 
     </script>

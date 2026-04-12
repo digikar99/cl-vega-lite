@@ -8,19 +8,34 @@
 
 (defclass plot-server-socket (hunchensocket:websocket-resource)
   ((task :initarg :task :initform (error ":TASK is unsupplied") :reader task)
+   (task-handler :initarg :task-handler :initform nil :reader task-handler)
    (hunchensocket::write-lock :initarg :write-lock))
   (:default-initargs :client-class 'plot-client))
+
 (defclass plot-client (hunchensocket:websocket-client) ())
 
 (defmethod hunchensocket:client-connected ((pss plot-server-socket) client)
-  (format t "~A connected to ~A~%" client pss))
+  (when (boundp '*vega-lite-string*)
+    (loop :for client :in (hunchensocket:clients *vega-lite-string-socket*)
+          :do (hunchensocket:send-text-message client *vega-lite-string*))))
 
-(defvar *vega-lite-string-socket* (make-instance 'plot-server-socket :task "/vega-lite-string/"))
+(defmethod hunchensocket:text-message-received ((pss plot-server-socket) client message)
+  (when (task-handler pss) (funcall (task-handler pss) message)))
 
-(defvar *plot-server-sockets* (list *vega-lite-string-socket*))
+(defvar *vega-lite-string-socket*
+  (make-instance 'plot-server-socket
+                 :task "/vega-lite-string/"))
+(defvar *save-plot-socket*
+  (make-instance 'plot-server-socket
+                 :task "/save-plot/"
+                 :task-handler 'save-plot-from-client))
+
+(defvar *plot-server-sockets* (list *vega-lite-string-socket*
+                                    *save-plot-socket*))
 
 (defun dispatch-plot-task (request)
-  (find (hunchentoot:script-name request) *plot-server-sockets* :test #'string= :key #'task))
+  (find (hunchentoot:script-name request) *plot-server-sockets*
+        :test #'string= :key #'task))
 
 (pushnew 'dispatch-plot-task hunchensocket:*websocket-dispatch-table*)
 
