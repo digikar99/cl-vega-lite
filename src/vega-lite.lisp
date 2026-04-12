@@ -8,11 +8,6 @@
   "https://vega.github.io/schema/vega-lite/v6.json"
   :test #'string=)
 
-(deftype spec-like (&optional (class 'cl:*))
-  (if (eq 'cl:* class)
-      `(or null list hash-table)
-      `(or null string ,class)))
-
 (defun vega-plot (specification)
   "Low level plot function.
 

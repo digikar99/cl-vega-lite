@@ -38,3 +38,10 @@
      ,@body))
 
 (defun car-or-self (item) (if (consp item) (car item) item))
+
+(defun plist-remove-nil (plist)
+  (let ((new-plist nil))
+    (alexandria:doplist (key val plist)
+      (when val
+        (setf new-plist (list* key val new-plist))))
+    new-plist))

@@ -1,5 +1,8 @@
 (in-package :vega-lite)
 
+(deftype spec-like (&optional (class 'spec))
+  `(or null string ,class))
+
 (defclass spec-class (standard-class)
   ((depth :allocation :class :initform -1)))
 
@@ -68,4 +71,5 @@
                                              p
                                              (first p)))
                                        fn-params)))
+         (setf ,args (plist-remove-nil ,args))
          (apply #'make-instance ',spec-name ,args)))))
