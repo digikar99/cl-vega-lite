@@ -1,5 +1,9 @@
 #+title: vega-lite: A [WIP] Common Lisp interface for Vega Lite
 
+#+begin_quote
+The state of vega-lite(-wip) is very much experimental. However, experimentation seems to be the only way to move forward.
+#+end_quote
+
 In case you haven't used, [[https://ggplot2.tidyverse.org/][ggplot]], you should definitely try! The magic seems to be due to [[https://link.springer.com/book/10.1007/0-387-28695-0][grammar of graphics]].
 
 [[https://vega.github.io/vega-lite/][vega-lite]] is another interactive grammar of graphics. (It's not clear to me if the two grammars are the same!)
@@ -8,12 +12,17 @@ The current library is a Common Lisp interface to vega-lite. Out of the box, it 
 
 I know of exactly one attempt doing something similar: [[https://github.com/Lisp-Stat/plot/][plot]]. However, compared to =plot/vega=, I intend to keep dependencies simpler. In particular, the only dependencies are:
 
-- hunchentoot: vega-lite is a JS library, so we use the browser
+- hunchensocket: vega-lite is a JS library, so we use the browser; and use bidirectional communication to obtain svg and png files
 - closer-mop: introspecting CLOS to ease usage
 - shasht: because JS loves JSON and I love shasht
 - alexandria
 
 Furthermore, the goal is to use the rich assertion and type system of Common Lisp to allow stronger checks and helps before the JSON reaches the browser, and minimize the /overgenerosity/ of JS interpreters.
+
+Also see:
+
+- [[file:docs/taming-vega-lite.org][Taming Vega Lite using CLOS, MOP, and Macros]]
+- [[file:docs/hierarchy.org][Component Hierarchy]]
 
 * Contents
 :PROPERTIES:

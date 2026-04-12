@@ -1,0 +1,168 @@
+#+title: Taming Vega Lite using CLOS, MOP, and Macros
+
+#+begin_quote
+The state of vega-lite(-wip) is very much experimental. However, experimentation seems to be the only way to move forward.
+#+end_quote
+
+In recent years, I have partly shifted to R's [[https://rstudio.github.io/cheatsheets/html/data-visualization.html][ggplot]]. It is based on a [[https://link.springer.com/book/10.1007/0-387-28695-0][grammar of graphics]] that essentially allows you to build plots by /composing/ different plot elements. That said, I'm neither an expert of ggplot nor of grammar of graphics. It's just something I'm enjoying.
+
+If you had asked me about plotting tools 3 years ago, I'd have replied [[https://matplotlib.org/][matplotlib]] and may be [[https://seaborn.pydata.org/][seaborn]]. These days, I'd recommend ggplot. Now, the two are probably built for different communities. R's ggplot is built for statisticians and experimental data analysts, while Python and matplotlib seem optimized for big data visualization.
+
+But all said, the most fun environment to program in is Common Lisp. And thus the question: Can we build something like ggplot in Common Lisp with as less effort as possible? 
+
+Naturally, building something from scratch that is an alternative to matplotlib or ggplot is a million ton of effort. So, we would have to start somewhere. Two options: C and Javascript (Browser). The state of GUI in Common Lisp isn't particularly great either, so C doesn't look great. And it turned out Javascript already has a plotting library [[https://vega.github.io/vega-lite/][vega-lite]] that seems like it could be a viable alternative to ggplot or matplotlib. It is based on an /interactive grammar of graphics/. (It's not clear to me if the two grammars are the same!) Since every platform has browsers, this can also be a crossplatform solution.
+
+Let us start with a simple example, [[https://vega.github.io/vega-lite/examples/bar.html][bar chart]]. 
+
+#+html: <p align="center"><img src="bar.png" height="360"/></p>
+
+Vega Lite is built around specifications. The specification for the above bar chart is  below:
+
+#+begin_src json
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "A simple bar chart with embedded data.",
+  "data": {
+    "values": [
+      {"a": "A", "b": 28}, {"a": "B", "b": 55}, {"a": "C", "b": 43},
+      {"a": "D", "b": 91}, {"a": "E", "b": 81}, {"a": "F", "b": 53},
+      {"a": "G", "b": 19}, {"a": "H", "b": 87}, {"a": "I", "b": 52}
+    ]
+  },
+  "mark": "bar",
+  "encoding": {
+    "x": {"field": "a", "type": "nominal", "axis": {"labelAngle": 0}},
+    "y": {"field": "b", "type": "quantitative"}
+  }
+}
+#+end_src
+
+My instinctive reaction is, this is too verbose. Several questions arise:
+
+1. What /other/ specifications are available?
+2. How do I know where to look to modify different aspects of the plot?
+3. How do I know if a particular specification is valid, or if particular properties are legal?
+
+A good type system seems it can easily answer these questions. Indeed, you can use a Typescript IDE, since Vega and Vega Lite are themselves [[https://github.com/vega/vega-lite/tree/main/src/spec][written in typescript]]. But hey, we want to use Common Lisp, for reasons that should not be alien to Lispers. What can we do?
+
+One conceptually simple way is to create Common Lisp classes mirroring the specification hierarchy. And really, [[https://vega.github.io/vega-lite/docs/spec.html][vega-lite looks incredibly featureful and fairly well-documented]]. There are also big consistencies that we can exploit. In particular, =lisp-case= maps particularly well to =camelCase= that vega-lite relies on.
+
+It turns out it is reasonably easy to define a =define-spec= macro that can macroexpand:
+
+#+begin_src lisp
+(define-spec data 1 (values url name format parse)
+    "https://vega.github.io/vega-lite/docs/data.html")
+#+end_src
+
+To:
+
+#+begin_src lisp
+(defclass data (spec)
+  ((depth :initform 1)
+   (values :type (or null spec string) :initarg :values)
+   (url :type (or null spec string) :initarg :url)
+   (name :type (or null spec string) :initarg :name)
+   (format :type (or null spec string) :initarg :format)
+   (parse :type (or null spec string) :initarg :parse))
+  (:documentation "https://vega.github.io/vega-lite/docs/data.html"))
+
+(closer-mop:ensure-finalized (find-class 'data))
+
+(defun make-data
+    (&rest #:args1180
+     &key (values nil) (url nil) (name nil) (format nil) (parse nil))
+  "https://vega.github.io/vega-lite/docs/data.html"
+  (declare (ignorable values url name format parse))
+  (apply #'make-instance 'data #:args1180))
+#+end_src
+
+Boilerplate riddance! From your lisp IDE (usually emacs), now you can easily see that =(make-data ...)= has the following possible parameters:
+
+#+begin_src lisp
+(make-data values url name format parse)
+#+end_src
+
+Indeed, this is incomplete compared to the full set: https://vega.github.io/vega-lite/docs/data.html 
+
+But you are not stumped, you know that data does not have =x= and =y= as parameters. In fact, what about =x= and =y=? It turns out they have a specification as given by:
+
+#+begin_src lisp
+(define-spec x 2 (field scale type axis aggregate bin sort stack time-unit title)
+    "https://vega.github.io/vega-lite/docs/encoding.html#field-def")
+(define-spec y 2 (field scale type axis aggregate bin sort stack time-unit title)
+    "https://vega.github.io/vega-lite/docs/encoding.html#field-def")
+#+end_src
+
+Easy enough! And if you looked at the JSON above, you can note that x and y are parts of =encoding= defined as:
+
+#+begin_src lisp
+(define-spec encoding 1
+    (x y x-error y-error
+     x2 y2 x-error2 y-error2
+
+     color opacity size angle shape
+
+     text tooltip
+     href description
+     detail key order
+
+     facet row column)
+    "For a full list of encodings, see https://vega.github.io/vega-lite/docs/encoding.html")
+#+end_src
+
+In fact, with simple macro-fu, it seems possible to define much of the vega lite spec elements! But this is huge. Even at the time of this writing, [[file:hierarchy.org][writing out the very incomplete hierarchy produced 400 lines of elements]].
+
+/But what about composing?/
+
+One thing to notice above is =x= is not only a slot of =encoding= but also a class in itself. Thus, you can have =(make-instance 'x ...)= and this will behave as expected. By exploiting the equivalence between slot names and class names, and a little bit of metadata, it is possible to write a [[file:../src/compose.lisp][generic =compose= function]] that works across all the classes.
+
+With that, you can do something like:
+
+#+begin_src lisp
+(vega-compose (make-data :values (vector (list :a "A" :b 28)
+                                         (list :a "B" :b 55)
+                                         (list :a "C" :b 43)))
+              (make-encoding
+               :x (make-x :field :a :type :nominal)
+               :y (make-y :field :b :type :quantitative))
+              (make-mark :type "bar"))
+#+end_src
+
+And to plot, we call =(vega-plot *)= on the result.
+
+#+html: <p align="center"><img src="bar2.png" height="360"/></p>
+
+With [[https://github.com/yitzchak/shasht/][shasht]], it is possible to convert CLOS objects to json objects. And with [[https://github.com/joaotavora/hunchensocket/][hunchensocket]], it is possible to use VegaEmbed's svg and png conversion capabilities to export the plots as svg and png respectively.
+
+What remains? A lot! Mainly, testing and adding new slots and classes. [[https://vega.github.io/vega-lite/docs/spec.html][The specification is huge!]] So also the [[https://vega.github.io/vega-lite/examples/][examples]]!
+
+PS: The only Common Lisp library that uses vega-lite I'm aware of is [[https://github.com/Lisp-Stat/plot][lisp-stat/plot]] and derivatives. However, I couldn't justify the dependencies for myself. Excessive dependencies make the libraries unstable in the long run. Currently, the dependencies of =vega-lite(-wip)= are:
+
+#+begin_src lisp
+  :depends-on ("alexandria"
+               "closer-mop"
+               "hunchentoot"
+               "hunchensocket"
+               "shasht")
+#+end_src
+
+I hope this remains the case, but we will see.
+
+PPS: There are a few [[file:../src/high-level.lisp][high-level functions]] which can act as examples, but here's another:
+
+#+begin_src lisp
+(vega-plot
+ (vega-compose
+  (make-data :url (vega-dataset "penguins.json"))
+  (make-mark :type :point)
+  (make-encoding :x (list :field "Flipper Length (mm)"
+                          :type "quantitative")
+                 :y (list :field "Body Mass (g)"
+                          :type "quantitative")
+                 :color (list :field "Species" :type "nominal")
+                 :shape (list :field "Species" :type "nominal"))))
+#+end_src
+
+CLOS and plists can be reasonably interspersed, since a number of slots are still lacking.
+
+#+html: <p align="center"><img src="penguins-scatter-color.png" height="360"/></p>
