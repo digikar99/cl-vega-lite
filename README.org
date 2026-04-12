@@ -23,6 +23,7 @@ Also see:
 
 - [[file:docs/taming-vega-lite.org][Taming Vega Lite using CLOS, MOP, and Macros]]
 - [[file:docs/hierarchy.org][Component Hierarchy]]
+- [[https://vega.github.io/vega-lite/docs/][Vega Lite Oocumentation]], [[https://vega.github.io/vega-lite/tutorials/getting_started.html][Tutorials]], and [[https://vega.github.io/vega-lite/examples/][Examples]]
 
 * Contents
 :PROPERTIES:
@@ -35,6 +36,9 @@ Also see:
   - [[#fast-to-get-started-high-level-rigid-wip][Fast to get started, high-level, rigid (WIP)]]
   - [[#grammatical-mid-level-wip][Grammatical, mid-level (WIP)]]
   - [[#ugly-low-level-flexible-vega-plot-specification][Ugly, low-level, flexible: (vega-plot specification)]]
+- [[#interactive-example][Interactive Example]]
+- [[#common-issues][Common Issues]]
+  - [[#error-message-fragment-too-big][Error: Message fragment too big]]
 :END:
 
 * Installation
@@ -124,6 +128,11 @@ This takes a vega-lite specification as a plist and converts it to JSON to use i
 See the [[https://vega.github.io/vega-lite/tutorials/getting_started.html][official Vega Lite tutorial]] as well as [[https://vega.github.io/vega-lite/examples/][examples]].
 
 * Interactive Example
+:PROPERTIES:
+:CUSTOM_ID: interactive-example
+:END:
+
+The figure generated from the following should pan using mouse in the browser.
 
 #+begin_src lisp
 (vega-plot
@@ -145,4 +154,20 @@ See the [[https://vega.github.io/vega-lite/tutorials/getting_started.html][offic
                                       :scale (list :zero nil))
                            :color (make-color :field "Species" :type "nominal")
                            :shape (make-shape :field "Species" :type "nominal"))))
+#+end_src
+
+* Common Issues
+:PROPERTIES:
+:CUSTOM_ID: common-issues
+:END:
+
+** Error: Message fragment too big
+:PROPERTIES:
+:CUSTOM_ID: error-message-fragment-too-big
+:END:
+
+This may occur duing =save-plot= and is caused because the image exceeds the maximum expected size. Increase it to sidestep the problem.
+
+#+begin_src lisp
+(setf hunchensocket:*websocket-maximum-fragment-size* (expt 2 20))
 #+end_src
