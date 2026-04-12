@@ -6,6 +6,7 @@
   :license "MIT"
   :author "Shubhamkar Ayare (digikar@proton.me)"
   :version "0.0.0"
+  :pathname #p"src/"
   :components ((:file "package")
                (:file "utils")
                (:file "server")
