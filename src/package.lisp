@@ -11,6 +11,8 @@
            #:compose
            #:vega-compose
 
+           #:spec
+           #:plot
 
            #:data
            #:make-data
