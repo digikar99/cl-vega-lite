@@ -122,3 +122,27 @@ Out of the box, support is provided for plotting when data is supplied as 1 dime
 This takes a vega-lite specification as a plist and converts it to JSON to use in the browser. This can be any plist.
 
 See the [[https://vega.github.io/vega-lite/tutorials/getting_started.html][official Vega Lite tutorial]] as well as [[https://vega.github.io/vega-lite/examples/][examples]].
+
+* Interactive Example
+
+#+begin_src lisp
+(vega-plot
+ (make-plot
+  :data (make-data :url (vega-dataset "penguins.json"))
+  :mark (make-mark :type :point)
+  :params (list (make-param :name "interval"
+                            :select (make-select :type :interval)
+                            :bind :scales)
+                (make-param :name "legend"
+                            :select (make-select :type :point
+                                                 :fields '("Species"))
+                            :bind (make-legend-binding :legend "dblclick")))
+  :encoding (make-encoding :x (make-x :field "Flipper Length (mm)"
+                                      :type "quantitative"
+                                      :scale (list :zero nil))
+                           :y (make-y :field "Body Mass (g)"
+                                      :type "quantitative"
+                                      :scale (list :zero nil))
+                           :color (make-color :field "Species" :type "nominal")
+                           :shape (make-shape :field "Species" :type "nominal"))))
+#+end_src

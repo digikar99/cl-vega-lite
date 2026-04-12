@@ -13,6 +13,7 @@
                (:file "server")
                (:file "spec")
                (:file "compose")
+               (:file "parameters")
                (:file "vega-lite")
                (:file "encoding")
                (:file "high-level")))

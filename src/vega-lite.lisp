@@ -61,7 +61,8 @@ Lisp names will be converted to snake case names."
             (setf data (base64:base64-string-to-usb8-array data)))
           (write-sequence data f))))))
 
-(define-spec plot 0 (name description title data transform params
+(define-spec plot 0 (name description title data transform
+                     (params :initarg :params :type params)
                      resolve
                      align bounds center spacing
                      ($schema :initform +default-schema+)

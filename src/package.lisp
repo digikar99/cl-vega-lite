@@ -24,6 +24,13 @@
            #:mark
            #:make-mark
 
+           #:param
+           #:params
+           #:select
+
+           #:make-param
+           #:make-select
+
            #:encoding
            #:x
            #:y
