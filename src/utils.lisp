@@ -18,3 +18,6 @@
                        (setf word-break t))
                       (t
                        (write-char ch)))))))
+
+(defun vega-dataset (name)
+  (concatenate 'string "https://cdn.jsdelivr.net/npm/vega-datasets@latest/data/" name))

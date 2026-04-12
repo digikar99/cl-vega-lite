@@ -10,6 +10,7 @@
 
            #:compose
            #:vega-compose
+           #:vega-dataset
 
            #:spec
            #:plot
