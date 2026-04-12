@@ -108,7 +108,10 @@
            #:make-row
            #:make-column
 
-
+           #:axis
+           #:make-axis
+           #:scale
+           #:make-scale
            #:bin
            #:make-bin
 

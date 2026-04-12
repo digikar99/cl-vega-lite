@@ -19,12 +19,6 @@ I know of exactly one attempt doing something similar: [[https://github.com/Lisp
 
 Furthermore, the goal is to use the rich assertion and type system of Common Lisp to allow stronger checks and helps before the JSON reaches the browser, and minimize the /overgenerosity/ of JS interpreters.
 
-Also see:
-
-- [[file:docs/taming-vega-lite.org][Taming Vega Lite using CLOS, MOP, and Macros]]
-- [[file:docs/hierarchy.org][Component Hierarchy]]
-- [[https://vega.github.io/vega-lite/docs/][Vega Lite Oocumentation]], [[https://vega.github.io/vega-lite/tutorials/getting_started.html][Tutorials]], and [[https://vega.github.io/vega-lite/examples/][Examples]]
-
 * Contents
 :PROPERTIES:
 :TOC:      :include all :ignore (this)
@@ -103,12 +97,52 @@ Out of the box, support is provided for plotting when data is supplied as 1 dime
 
 =vega-compose= takes in a list of elements and combines them. Essentially, it reduces using the function =compose=. It takes two arguments, and combines them /reasonably/.
 
+- make-plot
+- save-plot
+- make-concat
 - make-data
 - make-datasets
 - make-mark
+- make-param
+- make-select
+
 - make-encoding
 - make-x
 - make-y
+- make-x2
+- make-y2
+- make-x-offset
+- make-y-offset
+- make-theta
+- make-radius
+- make-theta2
+- make-radius2
+- make-longitude
+- make-latitude
+- make-longitude2
+- make-latitude2
+- make-angle
+- make-color
+- make-fill
+- make-stroke
+- make-opacity
+- make-fill-opacity
+- make-stroke-opacity
+- make-shape
+- make-size
+- make-stroke-dash
+- make-stroke-width
+- make-text
+- make-tooltip
+- make-href
+- make-description
+- make-detail
+- make-key
+- make-order
+- make-facet
+- make-row
+- make-column
+
 - make-axis
 - make-scale
 - make-bin
@@ -123,9 +157,14 @@ Out of the box, support is provided for plotting when data is supplied as 1 dime
 :CUSTOM_ID: ugly-low-level-flexible-vega-plot-specification
 :END:
 
-This takes a vega-lite specification as a plist and converts it to JSON to use in the browser. This can be any plist.
+This takes a vega-lite specification as either a plist or a =spec= object and converts it to JSON to use in the browser. This can be any plist or =spec= object.
 
-See the [[https://vega.github.io/vega-lite/tutorials/getting_started.html][official Vega Lite tutorial]] as well as [[https://vega.github.io/vega-lite/examples/][examples]].
+See:
+
+- [[file:docs/taming-vega-lite.org][Taming Vega Lite using CLOS, MOP, and Macros]]
+- [[file:docs/hierarchy.org][Component Hierarchy]]
+- [[https://vega.github.io/vega-lite/docs/][Vega Lite Oocumentation]], [[https://vega.github.io/vega-lite/tutorials/getting_started.html][Tutorials]], and [[https://vega.github.io/vega-lite/examples/][Examples]]
+
 
 * Interactive Example
 :PROPERTIES:
