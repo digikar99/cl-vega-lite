@@ -44,12 +44,16 @@
                     (alexandria:mappend #'closer-mop:class-slots
                                         (mapcar #'find-class superclasses))
                     direct-slots)))
-         (fn-params (remove-duplicates fn-params
-                                       :key (lambda (p) (if (consp p) (first p) p)))))
-    (loop :for p :in direct-slots
-          :do (setf (getf (rest p) :type)
-                    (or (getf (rest p) :type)
-                        `(or null spec string))))
+         (fn-params (remove 'depth
+                            (remove-duplicates fn-params
+                                               :key #'car-or-self)
+                            :key #'car-or-self)))
+    (loop :for (name . spec) :in direct-slots
+          :do (setf (getf spec :type)
+                    (or (getf spec :type)
+                        (if (find-class name nil)
+                            `(spec-like ,name)
+                            'spec-like))))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (defclass ,spec-name ,(or superclasses `(spec))
          (,@(when depth

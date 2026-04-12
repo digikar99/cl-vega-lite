@@ -36,3 +36,5 @@
          (shasht:*write-false-values* '(:false))
          (shasht:*read-default-object-format* :plist))
      ,@body))
+
+(defun car-or-self (item) (if (consp item) (car item) item))
