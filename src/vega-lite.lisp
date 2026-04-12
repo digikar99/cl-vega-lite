@@ -104,7 +104,10 @@ Lisp names will be converted to snake case names."
                      align bounds center spacing
                      ($schema :initform +default-schema+)
                      background padding autosize config usermeta
-                     mark encoding height width view projection
+                     mark encoding
+                     (height :initform *default-height* :initarg :height)
+                     (width :initform *default-width* :initarg :width)
+                     view projection
                      style corner-radius cursor fill fill-opacity opacity
                      stroke stroke-cap stroke-dash stroke-dash-offset
                      stroke-join stroke-miter-limit stroke-opacity stroke-width)
