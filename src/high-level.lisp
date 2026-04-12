@@ -8,10 +8,6 @@
 (defmethod 1d-data-as-list ((data vector))
   (coerce data 'list))
 
-(defvar *default-height* 360)
-
-(defvar *default-width* 480)
-
 (defun bar-chart (data
                   &key (labels (alexandria:iota (length data)))
                     min max

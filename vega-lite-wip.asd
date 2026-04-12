@@ -11,6 +11,7 @@
   :components ((:file "package")
                (:file "utils")
                (:file "server")
+               (:file "spec")
                (:file "compose")
                (:file "vega-lite")
                (:file "high-level")))

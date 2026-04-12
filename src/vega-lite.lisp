@@ -1,17 +1,17 @@
 (in-package :vega-lite)
 
+(defvar *default-height* 360)
+
+(defvar *default-width* 480)
+
 (alexandria:define-constant +default-schema+
   "https://vega.github.io/schema/vega-lite/v6.json"
   :test #'string=)
 
-(defmacro with-shasht-config (&body body)
-  `(let ((shasht:*write-plist-as-object* t)
-         (shasht:*write-alist-as-object* t)
-         (shasht:*symbol-name-function* #'snake-case-name)
-         (shasht:*write-null-values* '(:null nil))
-         (shasht:*write-false-values* '(:false))
-         (shasht:*read-default-object-format* :plist))
-     ,@body))
+(deftype spec-like (&optional (class 'cl:*))
+  (if (eq 'cl:* class)
+      `(or null list hash-table)
+      `(or null string ,class)))
 
 (defun vega-plot (specification)
   "Low level plot function.
@@ -60,44 +60,6 @@ Lisp names will be converted to snake case names."
           (when (string= format "png")
             (setf data (base64:base64-string-to-usb8-array data)))
           (write-sequence data f))))))
-
-(defclass spec-class (standard-class)
-  ((depth :allocation :class :initform -1)))
-
-(defclass spec ()
-  ((depth :allocation :class :initform -1))
-  (:documentation "The base class for vega-lite specification objects"))
-
-(defmacro define-spec (spec-name depth (&rest parameters) &optional (doc ""))
-  (let* ((args (gensym "ARGS"))
-         (parameters (loop :for p :in parameters
-                           :if (listp p)
-                             :collect p
-                           :else
-                             :collect (list p :initarg (intern (string p) :keyword))))
-         (fn-params (mapcar (lambda (p)
-                              (if (symbolp p)
-                                  p
-                                  (list (first p) (getf (rest p) :initform))))
-                            parameters)))
-    (loop :for p :in parameters
-          :do (setf (getf (rest p) :type)
-                    (or (getf (rest p) :type)
-                        `(or null spec string))))
-    `(progn
-       (defclass ,spec-name (spec)
-         ((depth :initform ,depth)
-          ,@parameters)
-         (:documentation ,doc))
-       (closer-mop:ensure-finalized (find-class ',spec-name))
-       (defun ,(alexandria:symbolicate 'make '- spec-name) (&rest ,args &key ,@fn-params)
-         ,doc
-         (declare (ignorable ,@(mapcar (lambda (p)
-                                         (if (symbolp p)
-                                             p
-                                             (first p)))
-                                       parameters)))
-         (apply #'make-instance ',spec-name ,args)))))
 
 (define-spec plot 0 (name description title data transform params
                      resolve
