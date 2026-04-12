@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
   <head>
     <title>Vega-Lite</title>
@@ -14,7 +14,7 @@
       .vega-actions a {
           margin-right: 5px;
       }
-    </style> 
+    </style>
     <!-- <link rel="stylesheet" href="index.css"> -->
   </head>
   <body>
@@ -26,13 +26,13 @@
                 align-items:center;
                 justify-content:center;">
       <!-- Container for the visualization -->
-      <div id="vis"></div>
+      <div id="vis">No plots yet!</div>
     </div>
 
     <script>
       var old_vlspec_string = "";
 
-      function json(filename){
+      function url(filename){
           const xmlhttp = new XMLHttpRequest();
           let obj = null;
           xmlhttp.onload = function() {
@@ -43,16 +43,21 @@
           return obj;
       }
 
-      function update_plot_if_required(){
-          const new_vlspec_string = json("./vega-lite-string/");
+      function update_plot_if_required(new_vlspec_string){
           if (new_vlspec_string != old_vlspec_string){
               vegaEmbed("#vis", JSON.parse(new_vlspec_string));
               old_vlspec_string = new_vlspec_string;
           }
       }
 
-      setInterval(update_plot_if_required, 500);
-      update_plot_if_required();
+      const vls = new WebSocket("./vega-lite-string/");
+      vls.addEventListener("open", (event) => {
+
+      })
+
+      vls.addEventListener("message", (event) => {
+          update_plot_if_required(event.data)
+      })
 
     </script>
   </body>

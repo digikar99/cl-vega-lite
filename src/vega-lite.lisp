@@ -14,8 +14,9 @@ Lisp names will be converted to snake case names."
         (shasht:*symbol-name-function* #'snake-case-name)
         (shasht:*write-null-values* '(:null nil))
         (shasht:*write-false-values* '(:false)))
-    (setf *vega-lite-string*
-          (shasht:write-json specification nil))
+    (setf *vega-lite-string* (shasht:write-json specification nil))
+    (loop :for client :in (hunchensocket:clients *vega-lite-string-socket*)
+          :do (hunchensocket:send-text-message client *vega-lite-string*))
     specification))
 
 (defclass spec-class (standard-class)

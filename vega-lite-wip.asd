@@ -2,6 +2,7 @@
   :depends-on ("alexandria"
                "closer-mop"
                "hunchentoot"
+               "hunchensocket"
                "shasht")
   :license "MIT"
   :author "Shubhamkar Ayare (digikar@proton.me)"
