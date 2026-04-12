@@ -155,12 +155,14 @@ PPS: There are a few [[file:../src/high-level.lisp][high-level functions]] which
  (vega-compose
   (make-data :url (vega-dataset "penguins.json"))
   (make-mark :type :point)
-  (make-encoding :x (list :field "Flipper Length (mm)"
-                          :type "quantitative")
-                 :y (list :field "Body Mass (g)"
-                          :type "quantitative")
-                 :color (list :field "Species" :type "nominal")
-                 :shape (list :field "Species" :type "nominal"))))
+  (make-encoding :x (make-x :field "Flipper Length (mm)"
+                            :type "quantitative"
+                            :scale (list :zero nil))
+                 :y (make-y :field "Body Mass (g)"
+                            :type "quantitative"
+                            :scale (list :zero nil))
+                 :color (make-color :field "Species" :type "nominal")
+                 :shape (make-shape :field "Species" :type "nominal"))))
 #+end_src
 
 CLOS and plists can be reasonably interspersed, since a number of slots are still lacking.

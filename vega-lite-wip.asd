@@ -14,4 +14,5 @@
                (:file "spec")
                (:file "compose")
                (:file "vega-lite")
+               (:file "encoding")
                (:file "high-level")))

@@ -117,19 +117,6 @@ https://vega.github.io/vega-lite/docs/mark.html#mark-def")
 
 ;;; Encoding
 
-(define-spec encoding 1
-    (x y x-error y-error
-     x2 y2 x-error2 y-error2
-
-     color opacity size angle shape
-
-     text tooltip
-     href description
-     detail key order
-
-     facet row column)
-    "For a full list of encodings, see https://vega.github.io/vega-lite/docs/encoding.html")
-
 (alexandria:define-constant +channel-types+ '(:quantitative :nominal :temporal)
   :test #'equal)
 
@@ -146,12 +133,6 @@ https://vega.github.io/vega-lite/docs/mark.html#mark-def")
   ;; argmin and argmax must be specified as objects
   :test #'equal
   :documentation "https://vega.github.io/vega-lite/docs/aggregate.html")
-
-(define-spec x 2 (field scale type axis aggregate bin sort stack time-unit title)
-    "https://vega.github.io/vega-lite/docs/encoding.html#field-def")
-
-(define-spec y 2 (field scale type axis aggregate bin sort stack time-unit title)
-    "https://vega.github.io/vega-lite/docs/encoding.html#field-def")
 
 (defun make-position-channel (name &rest args
                               &key field type axis aggregate bin sort stack time-unit
