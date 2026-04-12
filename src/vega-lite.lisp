@@ -74,10 +74,21 @@ occur as some slot or sub-slot of the PLOT class.
 
 https://vega.github.io/vega-lite/docs/spec.html")
 
+(define-spec concat (plot) (concat columns)
+  "In CONCAT, supply the list of plot objects. In COLUMNS, supply the number of columns.
+
+For example,
+
+```lisp
+(make-concat :concat (list (bar-chart '(1 2 3 4))
+                           (histogram '(1 2 3 4 2 3 3)))
+             :columns 2)
+```")
+
 ;;; Data
 
 (define-spec data 1 (values url name format parse)
-    "https://vega.github.io/vega-lite/docs/data.html")
+  "https://vega.github.io/vega-lite/docs/data.html")
 
 (define-spec datasets 1 (datasets)
     "https://vega.github.io/vega-lite/docs/data.html#datasets")

@@ -16,6 +16,8 @@
            #:spec
            #:plot
            #:make-plot
+           #:concat
+           #:make-concat
 
            #:data
            #:make-data
