@@ -61,6 +61,12 @@
                              spec1)
                     spec2)))))
 
+(defvar *plot-on-compose* t
+  "If non-NIL, calling VEGA-COMPOSE also results in a call to VEGA-PLOT")
+
 (defun vega-compose (initial-spec &rest more-specs)
   "Each element of SPECS must be an instance of a subclass of SPEC"
-  (reduce #'compose more-specs :initial-value initial-spec))
+  (let ((result (reduce #'compose more-specs :initial-value initial-spec)))
+    (if *plot-on-compose*
+        (vega-plot result)
+        result)))

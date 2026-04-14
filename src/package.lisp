@@ -9,6 +9,7 @@
            #:vega-plot
            #:save-plot
 
+           #:*plot-on-compose*
            #:compose
            #:vega-compose
            #:vega-dataset

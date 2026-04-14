@@ -97,8 +97,15 @@ Out of the box, support is provided for plotting when data is supplied as 1 dime
 
 =vega-compose= takes in a list of elements and combines them. Essentially, it reduces using the function =compose=. It takes two arguments, and combines them /reasonably/.
 
+Main functions and variables:
+
 - make-plot
 - save-plot
+- vega-compose
+- =*plot-on-compose*=
+
+Helper constructors - almost all of them have corresponding classes:
+
 - make-concat
 - make-data
 - make-datasets
@@ -147,10 +154,10 @@ Out of the box, support is provided for plotting when data is supplied as 1 dime
 - make-scale
 - make-bin
 
-- \+mark-types+
-- \+data-types+
-- \+channel-types+
-- \+scale-type+
+- =+mark-types+=
+- =+data-types+=
+- =+channel-types+=
+- =+scale-type+=
 
 ** Ugly, low-level, flexible: =(vega-plot specification)=
 :PROPERTIES:
