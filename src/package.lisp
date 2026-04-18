@@ -6,6 +6,8 @@
            #:+default-address+
            #:ensure-plot-server
 
+           #:depth
+
            #:vega-plot
            #:save-plot
 

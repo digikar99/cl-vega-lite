@@ -4,20 +4,22 @@
 The state of vega-lite(-wip) is very much experimental. However, experimentation seems to be the only way to move forward.
 #+end_quote
 
-In case you haven't used, [[https://ggplot2.tidyverse.org/][ggplot]], you should definitely try! The magic seems to be due to [[https://link.springer.com/book/10.1007/0-387-28695-0][grammar of graphics]].
+In case you haven't used, [[https://ggplot2.tidyverse.org/][ggplot]], you should definitely try! The magic seems to be due to [[https://en.wikipedia.org/wiki/Wilkinson%27s_Grammar_of_Graphics][grammar of graphics]]. [[https://vega.github.io/vega-lite/][vega-lite]] takes inspiration to this and adds to it to build a grammar of interactive grammar of graphics. To quote the wiki:
 
-[[https://vega.github.io/vega-lite/][vega-lite]] is another interactive grammar of graphics. (It's not clear to me if the two grammars are the same!)
+#+begin_quote
+*Grammar of Graphics* (GoG) is a grammar-based system for representing graphics to provide grammatical constraints on the composition of data and information visualizations. A graphical grammar differs from a graphics pipeline as it focuses on sematic components such as scales and guides, statistical functions, coordinate systems, marks and aesthetic attributes.^{[[https://en.wikipedia.org/wiki/Wilkinson's_Grammar_of_Graphics#cite_note-:3-1][(1)]]}^{[[https://en.wikipedia.org/wiki/Wilkinson's_Grammar_of_Graphics#cite_note-:1-2][(2)]]} For example, a [[https://en.wikipedia.org/wiki/Bar_chart][bar chart]] can be converted into a [[https://en.wikipedia.org/wiki/Pie_chart][pie chart]] by specifying a [[https://en.wikipedia.org/wiki/Polar_coordinate_system][polar coordinate system]] without any other change in graphical specification.:^{[[https://en.wikipedia.org/wiki/Wilkinson's_Grammar_of_Graphics#cite_note-:3-1][(1)]]}^{[[https://en.wikipedia.org/wiki/Wilkinson's_Grammar_of_Graphics#cite_note-:0-3][(3)]]}
+#+end_quote
 
-The current library is a Common Lisp interface to vega-lite. Out of the box, it works for up to about 1000 points, and may be 10000 points if you can tolerate some lag. Beyond that, you would need to to manual simplification.
+The current library =cl-vega-lite= is a Common Lisp interface to [[https://vega.github.io/vega-lite/][vega-lite]]. It provides ="vega-lite-wip"= asdf system, loading which creates the package =vega-lite= with all the below functionality. Out of the box, it works for up to about 1000 points, and may be 10000 points if you can tolerate some lag. Beyond that, you would need to do manual simplification.
 
-I know of exactly one attempt doing something similar: [[https://github.com/Lisp-Stat/plot/][plot]]. However, compared to =plot/vega=, I intend to keep dependencies simpler. In particular, the only dependencies are:
+I know of exactly one lisp attempt at doing something similar: [[https://github.com/Lisp-Stat/plot/][plot]]. However, compared to =plot/vega=, I intend to keep dependencies simpler. In particular, the only dependencies are:
 
 - hunchensocket: vega-lite is a JS library, so we use the browser; and use bidirectional communication to obtain svg and png files
 - closer-mop: introspecting CLOS to ease usage
 - shasht: because JS loves JSON and I love shasht
 - alexandria
 
-Furthermore, the goal is to use the rich assertion and type system of Common Lisp to allow stronger checks and helps before the JSON reaches the browser, and minimize the /overgenerosity/ of JS interpreters.
+Furthermore, the goal is to use the rich assertion and type system of Common Lisp to allow stronger checks and helps before the JSON reaches the browser, and minimize the /overgenerosity/ of JS interpreters. With SBCL, this can be achieved by compiling the system with =(declaim (optimize speed))=, however, making sure the library works as expected with this stronger type checking is still a work in progress. At a minimum, my expectation is that CLOS and spec objects are easier to work with that manipulating JSON.
 
 * Contents
 :PROPERTIES:
@@ -95,7 +97,7 @@ Out of the box, support is provided for plotting when data is supplied as 1 dime
 :CUSTOM_ID: grammatical-mid-level-wip
 :END:
 
-=vega-compose= takes in a list of elements and combines them. Essentially, it reduces using the function =compose=. It takes two arguments, and combines them /reasonably/.
+The mid level API maps CLOS classes onto the corresponding vega-lite specifications. At the highest level is the [[file:src/spec.lisp][spec class]]; all other classes within this library are subclasses of the =spec= class. Each object that is an instance of these classes also have a =depth= slot which specifies the JSON depth of the specification corresponding to that object.
 
 Main functions and variables:
 
@@ -104,7 +106,11 @@ Main functions and variables:
 - vega-compose
 - =*plot-on-compose*=
 
-Helper constructors - almost all of them have corresponding classes:
+=vega-compose= takes in a list of elements and combines them. Essentially, it reduces using the function =compose=. It takes two arguments, and combines them /reasonably/.
+
+To see example uses of these, refer [[file:src/high-level.lisp][src/high-level.lisp]] as well as the [[file:docs/taming-vega-lite.org][Taming Vega Lite]] short read.
+
+Other constructors - almost all of them have corresponding classes:
 
 - make-concat
 - make-data
@@ -212,7 +218,7 @@ The figure generated from the following should pan using mouse in the browser.
 :CUSTOM_ID: error-message-fragment-too-big
 :END:
 
-This may occur duing =save-plot= and is caused because the image exceeds the maximum expected size. Increase it to sidestep the problem.
+This may occur duing =save-plot= and is caused due to the image exceeding the maximum expected size. Increase the limit to sidestep the problem.
 
 #+begin_src lisp
 (setf hunchensocket:*websocket-maximum-fragment-size* (expt 2 20))

@@ -60,7 +60,7 @@
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (defclass ,spec-name ,(or superclasses `(spec))
          (,@(when depth
-              `((depth :initform ,depth)))
+              `((depth :initform ,depth :reader depth)))
           ,@direct-slots)
          (:documentation ,doc))
        (closer-mop:ensure-finalized (find-class ',spec-name))
