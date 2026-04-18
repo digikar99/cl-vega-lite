@@ -89,6 +89,15 @@ For example,
 
 (define-spec data 1 (values url name format parse)
   "https://vega.github.io/vega-lite/docs/data.html")
+(define-spec data 1 (values url name format)
+  "Inline data can be specified using VALUES property.
+
+https://vega.github.io/vega-lite/docs/data.html")
+
+(define-spec format 2 ((type :initarg :type :type (member :json :csv :tsv :dsv))
+                       parse)
+  "https://vega.github.io/vega-lite/docs/data.html#format")
+
 
 (define-spec datasets 1 (datasets)
     "https://vega.github.io/vega-lite/docs/data.html#datasets")

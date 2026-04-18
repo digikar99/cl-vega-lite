@@ -1,6 +1,6 @@
 (cl:defpackage :vega-lite
   (:use :cl)
-  (:shadow #:fill)
+  (:shadow #:fill #:format)
   (:export #:*plot-server*
            #:+default-port+
            #:+default-address+
