@@ -19,7 +19,7 @@ I know of exactly one lisp attempt at doing something similar: [[https://github.
 - shasht: because JS loves JSON and I love shasht
 - alexandria
 
-Furthermore, the goal is to use the rich assertion and type system of Common Lisp to allow stronger checks and helps before the JSON reaches the browser, and minimize the /overgenerosity/ of JS interpreters. With SBCL, this can be achieved by compiling the system with =(declaim (optimize speed))=, however, making sure the library works as expected with this stronger type checking is still a work in progress. At a minimum, my expectation is that CLOS and spec objects are easier to work with that manipulating JSON.
+Furthermore, the goal is to use the rich assertion and type system of Common Lisp to allow stronger checks and helps before the JSON reaches the browser, and minimize the /overgenerosity/ of JS interpreters. With SBCL, this can be achieved by compiling the system with =(declaim (optimize safety))=, however, making sure the library works as expected with this stronger type checking is still a work in progress. At a minimum, my expectation is that CLOS and spec objects are easier to work with that manipulating JSON.
 
 * Contents
 :PROPERTIES:
