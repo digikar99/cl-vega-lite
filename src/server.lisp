@@ -47,12 +47,12 @@
     (let ((old-port (hunchentoot:acceptor-port *plot-server*))
           (old-address (hunchentoot:acceptor-address *plot-server*)))
       (when verbose
-        (format t "~%*plot-server* is already running at ~A:~A.~%" old-address port))
+        (cl:format t "~%*plot-server* is already running at ~A:~A.~%" old-address port))
       (when (not (and (= port old-port)
                       (string= address old-address)))
-        (when verbose (format t "Stopping it... "))
+        (when verbose (cl:format t "Stopping it... "))
         (hunchentoot:stop *plot-server*)
-        (when verbose (format t "Done~%"))
+        (when verbose (cl:format t "Done~%"))
         (force-output))))
   (when (not (boundp '*plot-server*))
     (setf *plot-server*
@@ -67,5 +67,5 @@
     (setf (hunchentoot:acceptor-access-log-destination *plot-server*) nil)
     (hunchentoot:start *plot-server*)
     (when verbose
-      (format t "Started *plot-server*. It is available at~%  http://~a:~a"
-              address port))))
+      (cl:format t "Started *plot-server*. It is available at~%  http://~a:~a"
+                 address port))))
